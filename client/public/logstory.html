@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>로그스토리</title>
+<style>
+:root{--bg:#050508;--panel:#12131a;--border:#2a2b38;--text:#f0f0f5;--dim:#8a8d9b;--gold:#f3b431;--red:#e74c3c;--green:#2ecc71;--blue:#55aaff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;background:#000;color:var(--text);font-family:Arial,"Malgun Gothic",sans-serif;overflow:hidden}
+button{font:inherit;font-weight:bold;cursor:pointer;color:#fff;background:#1b1c26;border:2px solid #3b3d52;padding:10px;border-radius:2px}
+button:active{transform:translateY(2px)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#app{position:relative;width:100%;max-width:440px;height:100%;margin:auto;background:#08090e;display:flex;flex-direction:column;border-left:2px solid #1a1b26;border-right:2px solid #1a1b26}
+
+header{height:58px;flex-shrink:0;padding:8px 12px;background:#0d0e14;border-bottom:3px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.name{font-weight:bold}
+.class{font-size:11px;color:var(--dim)}
+.gold{color:var(--gold);font-weight:bold}
+.menuBtn{padding:8px 12px}
+
+nav.tabs{display:flex;flex-shrink:0;border-bottom:3px solid var(--border);background:#0b0c11}
+nav.tabs button{flex:1;border:none;border-radius:0;background:transparent;color:var(--dim);padding:10px 4px;font-size:12px;border-bottom:3px solid transparent}
+nav.tabs button.on{color:var(--gold);border-bottom:3px solid var(--gold)}
+
+main{flex:1;overflow:auto;padding:12px}
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100%}
+.card{background:var(--panel);border:3px solid var(--border);padding:14px;margin-bottom:10px}
+.title{color:var(--gold);font-weight:bold;margin-bottom:8px}
+.dim{color:var(--dim);font-size:12px;line-height:1.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.wide{width:100%}
+.accent{border-color:var(--gold);background:#332716}
+.danger{border-color:#883333;background:#401b1b;color:#ffb0b0}
+.good{border-color:#2e8c61;background:#173b2f}
+.blue{border-color:#4276a9;background:#172b40}
+
+.bar{height:10px;background:#260e0e;border:1px solid #000;margin:4px 0 8px;overflow:hidden}
+.fill{height:100%;background:var(--red);transition:width .55s cubic-bezier(.23,1,.32,1)}
+.mp .fill{background:#205b9a}
+.xp .fill{background:#b8823a}
+.statusBar{position:relative;height:18px;border-color:#1a1a22}
+.statusBar .barText{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:bold;letter-spacing:.02em;text-shadow:0 1px 3px #000;pointer-events:none}
+.statusBar.damageFlash{animation:resourceHitFlash .52s ease-out}
+.statusBar.damageFlash .fill{animation:resourceFillFlash .52s ease-out}
+@keyframes resourceHitFlash{0%,100%{box-shadow:inset 0 0 0 rgba(255,45,45,0)}25%{box-shadow:inset 0 0 14px rgba(255,45,45,.95),0 0 10px rgba(255,45,45,.7)}55%{box-shadow:inset 0 0 8px rgba(255,45,45,.55)}}
+@keyframes resourceFillFlash{0%,100%{filter:brightness(1)}25%{filter:brightness(1.9);background:#ff3f3f}55%{filter:brightness(1.35);background:#ff5a4f}}
+
+.statrow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #252631;font-size:13px}
+.small{font-size:10px;color:var(--dim)}
+.tag{display:inline-block;border:1px solid #4b4d61;padding:3px 5px;margin:2px 2px 0 0;font-size:10px;color:#ddd}
+
+#home{position:relative;isolation:isolate;margin:-12px;padding:12px;min-height:100%;background-image:linear-gradient(180deg,rgba(7,8,17,.34),rgba(7,8,17,.58)),url("assets/home-twilight-pixel.png");background-size:cover;background-position:center;background-repeat:no-repeat}
+#home .card{background:rgba(13,14,23,.88);box-shadow:0 8px 22px rgba(0,0,0,.28)}
+#home .grid{position:relative}
+#home .grid button{background-color:rgba(20,21,33,.9);box-shadow:0 5px 14px rgba(0,0,0,.2)}
+#home .grid .accent{background-color:rgba(51,39,22,.94)}
+#home .title,#home .dim,#home .grid,#home .card{position:relative;z-index:1}
+#intro{position:absolute;inset:0;background-image:linear-gradient(180deg,rgba(4,4,9,.2) 0%,rgba(5,5,10,.12) 32%,rgba(5,5,10,.9) 88%,#05050a 100%),url("assets/intro-red-moon-bg.png");background-size:cover;background-position:center;z-index:20;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:25px 22px 76px;text-align:center}
+#intro:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen;opacity:.55}
+.introKicker{position:relative;z-index:1;margin-bottom:10px;color:#ff9b39;font-size:10px;letter-spacing:.12em;text-shadow:0 2px 8px #000}
+.logo{position:relative;z-index:1;font-size:30px;color:#ffb33f;font-weight:900;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 12px rgba(246,98,35,.46),2px 2px 0 #35170c}
+.story{position:relative;z-index:1;font-size:13px;color:#f0e1cd;line-height:1.7;margin-bottom:24px;text-shadow:0 2px 5px #000}
+.introMeta{display:inline-block;margin-top:7px;color:#bcb1a6;font-size:10px;letter-spacing:.04em}
+#introBtns{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;width:220px}
+#introBtns button{box-shadow:0 5px 0 rgba(0,0,0,.38),0 0 18px rgba(236,121,41,.12)}
+#introBtns .accent{background:rgba(65,38,20,.92);border-color:#ffad3c}
+
+.world{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.loc{min-height:80px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.loc b{margin-bottom:5px;font-size:12px}
+.loc span{font-size:10px;color:var(--dim)}
+.loc.locked{opacity:.55}
+
+.battle{border:3px solid var(--border);background:#090a0f;min-height:210px;position:relative;margin-bottom:10px;overflow:hidden;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:16px 16px;background-position:0 0;background-repeat:repeat}
+.battle.firstDungeon{background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px),linear-gradient(180deg,rgba(4,5,9,.2),rgba(4,5,9,.7)),url("assets/dungeon-01-battle-bg.png");background-size:16px 16px,16px 16px,auto,cover;background-position:0 0,0 0,center,center;background-repeat:repeat,repeat,no-repeat,no-repeat}
+.battleState{position:absolute;left:50%;bottom:8px;z-index:4;display:none;transform:translateX(-50%);min-width:190px;padding:6px 10px;text-align:center;background:#05060bee;border:1px solid #8c6725;box-shadow:2px 2px 0 #000;color:#f3c968;pointer-events:none}
+.battleState.show{display:block}
+.battleState strong{display:block;font-size:10px;letter-spacing:.14em}
+.battleState span{display:block;margin-top:2px;font-size:10px;color:#f0e2b8}
+.battle.waiting .battleState{animation:waitPulse 1.35s steps(2,end) infinite}
+.battle.waiting #heroGaugeBar{box-shadow:0 0 8px rgba(243,180,49,.9)}
+@keyframes waitPulse{0%,100%{opacity:1}50%{opacity:.72}}
+.battleDungeonHud{position:absolute;left:8px;top:8px;z-index:3;min-width:132px;padding:6px 8px;background:#05060bee;border:1px solid #5c441d;box-shadow:2px 2px 0 #000;color:#f0d18a;text-align:left}
+.battleDungeonHud .kicker{display:block;font-size:8px;letter-spacing:.12em;color:#8e7955;margin-bottom:2px}
+.battleDungeonHud strong{display:block;font-size:12px;line-height:1.2}
+.battleDungeonHud span{display:block;margin-top:3px;font-size:11px;color:#e7a93b}
+.fighter{position:absolute;bottom:28px;width:92px;height:92px;display:flex;align-items:flex-end;justify-content:center;font-size:48px;z-index:2;will-change:transform}
+.fighter img,.fighter canvas{position:relative;z-index:1;width:92px;height:92px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 0 #000b)}
+.sprite-shadow{position:absolute;left:50%;bottom:1px;z-index:0;width:62px;height:13px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.62);filter:blur(1px);pointer-events:none}
+.fighter.hero{left:28px}
+.fighter.enemy{right:28px}
+.fighter.hitFlash img{animation:spriteHitFlash .36s steps(2,end)}
+@keyframes spriteHitFlash{0%,100%{filter:drop-shadow(0 4px 0 #000b) brightness(1)}35%{filter:drop-shadow(0 4px 0 #000b) brightness(2) saturate(1.5)}}
+.vsname{position:absolute;top:8px;right:8px;text-align:right;font-size:11px;background:#000c;padding:6px;border:1px solid #333}
+.hpmini{width:110px;height:6px;background:#260e0e;margin-top:3px}
+.hpmini .fill{height:100%}
+.floattext{position:absolute;font-size:14px;font-weight:bold;animation:rise 1s ease-out forwards;pointer-events:none}
+@keyframes rise{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-30px)}}
+
+.log{height:78px;overflow:auto;background:#08090d;border:2px solid var(--border);padding:7px;font-size:11px;line-height:1.5;margin-bottom:9px}
+.cmd{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+
+.menu{position:fixed;right:calc(50% - 208px);top:55px;width:170px;background:#12131c;border:3px solid #3b3d52;padding:8px;z-index:15;display:none}
+.menu.show{display:block}
+.menu button{width:100%;margin-bottom:6px;text-align:left}
+
+.equip{display:flex;justify-content:space-between;align-items:center;gap:8px;border:2px solid #303241;padding:9px;margin-bottom:7px}
+.itemrow{display:flex;justify-content:space-between;align-items:center;gap:8px;border:2px solid #303241;padding:9px;margin-bottom:7px}
+.itemrow .info{flex:1}
+.settingGroup{border:2px solid #303241;padding:10px;margin-bottom:8px;background:#0d0e15}
+.settingLabel{display:flex;justify-content:space-between;align-items:center;color:#f0f0f5;font-size:13px}
+.volumeChoices{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:9px}
+.volumeChoices button{padding:8px 4px;color:var(--dim);border-color:#303241;background:#171821}
+.volumeChoices button.accent{color:#fff;border-color:var(--gold);background:#332716}
+.companionCard{display:flex;gap:10px;align-items:center;border:2px solid #303241;padding:9px;margin-bottom:8px;background:#0d0e15}
+.companionPortrait{flex:0 0 56px;width:56px;height:56px;display:flex;align-items:flex-end;justify-content:center;background:#090a0f;border:1px solid #3b3d52;overflow:hidden}
+.companionPortrait img,.companionPortrait canvas{width:54px;height:54px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 0 #000b)}
+.companionMeta{flex:1;min-width:0}.companionMeta b{color:var(--gold)}
+.companionBattleHud{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:0 0 8px}
+.companionBattleCard{min-width:0;border:1px solid #303241;background:#0b0c12;padding:5px;color:#d7d7df}
+.companionBattleCard b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#f0d18a}
+.companionBattleCard .small{display:block;font-size:9px;margin-top:2px}.companionGauge{height:4px;background:#1c1d26;border:1px solid #000;margin-top:4px;overflow:hidden}.companionGauge .fill{height:100%;background:#8c6ad9;transition:width .1s linear}
+
+.modal{position:fixed;inset:0;background:#000b;z-index:30;display:none;align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex}
+.modalbox{width:100%;max-width:400px;max-height:85vh;overflow:auto;background:#11121a;border:3px solid #44465a;padding:15px}
+.choice{width:100%;padding:12px;text-align:left;margin-bottom:8px;white-space:normal}
+.jobChoice{display:flex;align-items:center;gap:10px}
+.jobPreview{flex:0 0 66px;width:66px;height:66px;display:flex;align-items:flex-end;justify-content:center;background:#090a0f;border:1px solid #3b3d52;overflow:hidden}
+.jobPreview img,.jobPreview canvas{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 0 #000b)}
+.spriteCanvas{display:block;max-width:100%;max-height:100%;image-rendering:pixelated}
+.currentJobPreview{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px;border:1px solid #3b3d52;background:#090a0f}
+.currentJobPreview .jobPreview{border:0;background:transparent}
+.closeRow{text-align:right;margin-top:6px}
+.headResources{display:flex;gap:7px;margin-top:5px;font-family:Arial,"Malgun Gothic",sans-serif;font-size:10px;color:var(--dim)}
+.headResources span:first-child{color:#ff8e83}.headResources span:nth-child(2){color:#78bfff}.headResources span:last-child{color:#d2a354}
+.xpLine{display:flex;justify-content:space-between;color:var(--dim);font-size:10px;margin:0 0 2px}
+.xp .fill{background:#b8823a}
+@keyframes heroStrike{0%,100%{transform:translateX(0)}45%{transform:translateX(42px) scale(1.08)}70%{transform:translateX(30px) scale(1.04)}}
+@keyframes enemyRecoil{0%,100%{transform:translateX(0)}45%{transform:translateX(22px) rotate(5deg)}70%{transform:translateX(12px) rotate(2deg)}}
+@keyframes enemyStrike{0%,100%{transform:translateX(0)}45%{transform:translateX(-34px) scale(1.06)}70%{transform:translateX(-22px) scale(1.03)}}
+@keyframes heroRecoil{0%,100%{transform:translateX(0)}45%{transform:translateX(-18px) rotate(-3deg)}70%{transform:translateX(-9px) rotate(-1deg)}}
+.fighter{will-change:transform;z-index:2}
+.fighter.hero.attackMotion{animation:heroStrike .62s cubic-bezier(.23,1,.32,1)}
+.fighter.enemy.recoilMotion{animation:enemyRecoil .52s cubic-bezier(.23,1,.32,1)}
+.fighter.enemy.attackMotion{animation:enemyStrike .62s cubic-bezier(.23,1,.32,1)}
+.fighter.hero.recoilMotion{animation:heroRecoil .52s cubic-bezier(.23,1,.32,1)}
+@media (prefers-reduced-motion:reduce){.fighter.hero.attackMotion,.fighter.enemy.recoilMotion,.fighter.enemy.attackMotion,.fighter.hero.recoilMotion,.battle.waiting .battleState{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <audio id="bgm" loop preload="auto" aria-label="로그스토리 배경 음악"></audio>
+
+  <div id="intro">
+    <div class="introKicker">[경고: 시스템 최후 리포트]</div>
+    <div class="logo">로그스토리</div>
+    <div class="story">핵전쟁 이후 무한리프 로그라이크 RPG<br><span class="introMeta">생존 기록 001 // 반복은 끝나지 않는다</span></div>
+    <div id="introBtns">
+      <button class="accent" onclick="newGame()">새 게임</button>
+      <button id="continueBtn" onclick="continueGame()" disabled>이어하기</button>
+    </div>
+  </div>
+
+  <header>
+    <div><div class="name" id="headName">나</div><div class="class" id="headClass">노전직 · 레벨 1</div><div class="headResources"><span id="headHpText">HP 100/100</span><span id="headMpText">MP 30/30</span><span id="headXpText">EXP 0/100</span></div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="gold" id="headGold">0G</div>
+      <button class="menuBtn" onclick="toggleMenu()">☰</button>
+    </div>
+  </header>
+
+  <div class="menu" id="menu">
+    <button onclick="openModal('bag')">🎒 가방</button>
+    <button onclick="openModal('equip')">⚔️ 장비</button>
+    <button onclick="openModal('skills')">✨ 스킬 / 능력치</button>
+    <button onclick="openModal('companions')">🤝 동료</button>
+    <button onclick="saveGame(true)">💾 저장</button>
+    <button onclick="openModal('settings')">⚙️ 게임 설정</button>
+    <button onclick="openModal('help')">⚙️ 게임 정보</button>
+  </div>
+
+  <main>
+    <section id="home" class="screen active">
+      <div class="card"><div class="title" id="campTitle">폐허 마을</div><div class="dim">멸망 이후 살아남은 사람들이 모여 있는 베이스캠프다.</div></div>
+      <div class="grid">
+        <button onclick="openModal('shop')">🛒 상점</button>
+        <button onclick="heal()">❤️ 회복</button>
+        <button onclick="npc()">💬 주민</button>
+        <button onclick="show('world')">🗺️ 월드맵</button>
+        <button class="wide" style="grid-column:1/3" onclick="openModal('job')">🏅 전직</button>
+        <button class="wide" style="grid-column:1/3" onclick="openModal('companions')">🤝 동료·호감도</button>
+      </div>
+      <div class="card" style="margin-top:10px"><div class="title">캠프 정보</div><div id="npcText" class="dim">상점, 전직관, 주민이 당신을 바라보고 있다.</div></div>
+    </section>
+
+    <section id="world" class="screen">
+      <div class="card"><div class="title">월드맵</div><div class="dim">돌아다닐 지역을 선택하세요.</div></div>
+      <div class="world" id="worldGrid"></div>
+      <button class="wide" style="margin-top:10px" onclick="show('home')">⬅ 캠프로</button>
+    </section>
+
+    <section id="dungeon" class="screen">
+      <div class="card"><div class="title" id="dungeonTitle">지역명</div><div class="dim" id="dungeonDesc">이 지역에서 몬스터를 사냥하세요.</div></div>
+      <div class="card">
+       <div class="dim" style="display:flex;justify-content:space-between;margin-bottom:6px"><span>처치 수</span><span id="dungeonKillCount">0 / 10</span></div>
+       <div class="bar" style="margin-bottom:0"><div class="fill" id="dungeonKillBar" style="width:0%;background:var(--gold)"></div></div>
+      </div>
+      <div class="grid">
+       <button class="accent wide" style="grid-column:1/3" onclick="huntMonster()">⚔️ 몬스터 사냥</button>
+       <button class="danger wide" id="bossBtn" style="grid-column:1/3" onclick="huntBoss()" disabled>👑 보스 사냥</button>
+      </div>
+      <button class="wide" style="margin-top:10px" onclick="show('world')">⬅ 월드맵으로</button>
+    </section>
+
+    <section id="battle" class="screen">
+      <div class="battle" id="battleArea">
+        <div class="battleDungeonHud" aria-live="polite"><span class="kicker">DUNGEON // CURRENT</span><strong id="battleDungeonName">폐허 마을 외곽</strong><span id="battleDungeonProgress">[0/10]</span></div>
+        <div class="battleState" id="battleState" aria-live="polite"><strong id="battleStateTitle">ATB</strong><span id="battleStateText">내 행동 게이지 충전 중</span></div>
+        <div class="fighter hero" id="heroSprite"><span class="sprite-shadow" aria-hidden="true"></span><img data-cutout="true" src="assets/job-citizen-cutout.png" alt="일반시민 캐릭터"></div>
+        <div class="fighter enemy" id="enemySprite"><span class="sprite-shadow" aria-hidden="true"></span><img src="assets/chibi-mutant-alpha.png" alt="몬스터"></div>
+        <div class="vsname" id="enemyName">?</div>
+      </div>
+      <div class="bar statusBar" id="pHpBarWrap"><div class="fill" id="pHpBar" style="width:100%"></div><span class="barText" id="pHpText">HP 100/100</span></div>
+      <div class="bar mp statusBar" id="pMpBarWrap"><div class="fill" id="pMpBar" style="width:100%"></div><span class="barText" id="pMpText">MP 30/30</span></div>
+      <div class="bar xp statusBar" id="pXpBarWrap"><div class="fill" id="pXpBar" style="width:0%"></div><span class="barText" id="pXpText">EXP 0/100</span></div>
+      <div class="dim small" style="display:flex;justify-content:space-between;margin-bottom:2px"><span>ATB 게이지</span><span id="heroReadyTag">⌛ 행동 게이지 충전 중</span></div>
+      <div class="bar" style="height:8px;margin-bottom:9px" id="heroGaugeWrap"><div class="fill" id="heroGaugeBar" style="width:0%;background:var(--gold)"></div></div>
+      <div id="companionBattleHud" class="companionBattleHud" aria-live="polite"></div>
+      <div class="log" id="log"></div>
+      <div class="cmd">
+        <button class="accent" id="atkBtn" onclick="attack()" disabled>⚔️ 공격</button>
+        <button class="blue" id="skillBtn" onclick="openModal('battleSkills')" disabled>✨ 스킬</button>
+        <button id="potionBtn" onclick="useItem('potion')" disabled>🧪 포션</button>
+        <button class="good" id="autoBtn" onclick="toggleAuto()">🤖 자동: 꺼짐</button>
+        <button class="danger wide" id="fleeBtn" style="grid-column:1/3" onclick="requestFlee()">🏃 도주</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal"><div class="modalbox" id="modalbox"></div></div>
+</div>
+
+<script>
+const SAVE_KEY="logstory-save";
+const AUDIO_SETTINGS_KEY="logstory-audio-settings";
+const DEFAULT_AUDIO_SETTINGS={bgm:2,sfx:5};
+let audioSettings=Object.assign({},DEFAULT_AUDIO_SETTINGS);
+
+const WEAPON_SETS={
+ general:[
+  {id:"club",name:"낡은 둔기",atk:8,mag:0,hit:90,speed:100,crit:0,price:0,desc:"어디서나 쓸 수 있는 기본 무기"}
+ ],
+ warrior:[
+  {id:"club",name:"낡은 둔기",atk:8,mag:0,hit:90,speed:100,crit:0,price:0,desc:"기본 무기"},
+  {id:"sword",name:"강철검",atk:16,mag:0,hit:94,speed:100,crit:0,price:120,desc:"적당한 공격력과 명중률"},
+  {id:"mace",name:"대형 둔기",atk:20,mag:0,hit:88,speed:85,crit:0,stun:15,price:200,desc:"검보다 강하지만 게이지가 느림, 기절 확률 보유"},
+  {id:"axe",name:"전투도끼",atk:26,mag:0,hit:84,speed:70,crit:0,bleed:20,price:300,desc:"가장 강한 공격력과 출혈, 게이지는 가장 느림"}
+ ],
+ rogue:[
+  {id:"club",name:"낡은 둔기",atk:8,mag:0,hit:90,speed:100,crit:0,price:0,desc:"기본 무기"},
+  {id:"dagger",name:"단검",atk:10,mag:0,hit:92,speed:130,crit:15,price:110,desc:"가장 빠른 게이지, 낮은 공격력, 치명타 확률 증가"},
+  {id:"bow",name:"사냥용 활",atk:16,mag:0,hit:90,speed:100,crit:5,price:180,desc:"적당한 원거리 공격"},
+  {id:"crossbow",name:"강철 석궁",atk:20,mag:0,hit:95,speed:85,crit:5,price:260,desc:"활보다 강하고 명중률이 좋지만 게이지는 느림"}
+ ],
+ mage:[
+  {id:"club",name:"낡은 둔기",atk:8,mag:0,hit:90,speed:100,crit:0,price:0,desc:"기본 무기"},
+  {id:"staff",name:"깨진 지팡이",atk:4,mag:22,hit:80,speed:80,crit:10,price:200,desc:"양손무기, 게이지는 느리지만 마법 치명타 확률 증가"},
+  {id:"wand",name:"마력 완드",atk:4,mag:16,hit:88,speed:120,crit:0,price:170,desc:"가장 빠른 마법사 무기, 장신구와 함께 착용 가능"}
+ ]
+};
+function jobCategory(job){
+ if(["전사","기사"].includes(job))return "warrior";
+ if(["도적","암살자"].includes(job))return "rogue";
+ if(["마법사","대마법사"].includes(job))return "mage";
+ return "general";
+}
+function gearList(slot){
+ if(slot==="weapon")return WEAPON_SETS[jobCategory(P.job)];
+ if(slot==="armor")return GEAR.armors;
+ return GEAR.accessories;
+}
+const GEAR={
+ armors:[
+  {id:"work",name:"낡은 작업복",def:3,price:0},
+  {id:"vest",name:"방탄조끼",def:9,price:110},
+  {id:"plate",name:"기사 흉갑",def:18,price:320}
+ ],
+ accessories:[
+  {id:"band",name:"낡은 팔찌",def:0,hit:0,price:0},
+  {id:"survive",name:"생존 팔찌",def:2,hit:6,price:150},
+  {id:"focus",name:"집중의 반지",def:1,hit:4,price:180}
+ ]
+};
+
+const SHOP_ITEMS=[
+ {id:"potion",name:"회복 포션",price:30,desc:"체력 35% 회복"},
+ {id:"mana",name:"마나 포션",price:40,desc:"마나 40% 회복"},
+ {id:"elixir",name:"엘릭서",price:120,desc:"체력·마나 전부 회복"},
+ {id:"scroll",name:"강화 주문서",price:80,desc:"다음 강화 성공률 +20%"}
+];
+
+const SAFE_LIMIT={weapon:6,armor:4,accessory:2};
+
+const SKILLS={
+ bash:{id:"bash",name:"강타",cost:8,power:1.8,kind:"phys",desc:"기본 물리 강타"},
+ smash:{id:"smash",name:"분쇄",cost:14,power:2.5,kind:"phys",desc:"강한 일격"},
+ guard:{id:"guard",name:"방패치기",cost:10,power:1.3,kind:"phys",desc:"적당한 물리 피해"},
+ ambush:{id:"ambush",name:"암습",cost:11,power:2.2,kind:"phys",desc:"치명타가 잘 터지는 기습"},
+ double:{id:"double",name:"난타",cost:16,power:1.1,kind:"phys",hits:3,desc:"3연속 타격"},
+ fire:{id:"fire",name:"파이어볼",cost:12,power:2.1,kind:"magic",desc:"화염 마법"},
+ ice:{id:"ice",name:"아이스랜스",cost:16,power:2.6,kind:"magic",desc:"강력한 빙결 마법"},
+ mend:{id:"mend",name:"치유",cost:15,heal:0.42,kind:"heal",desc:"체력을 회복한다"}
+};
+
+const JOBS={
+ "일반시민":{name:"일반시민",req:1,from:[],bonus:{},skills:["bash"],extra:[],passive:{name:"기본 적응",desc:"특수 패시브 없음. 어떤 환경에서도 기본 행동을 수행합니다."}},
+ "현장직원":{name:"현장직원",req:5,from:["일반시민"],bonus:{str:3,con:2},skills:["bash","guard"],extra:["smash"],passive:{name:"현장 회복",desc:"ATB 게이지가 찰 때마다 HP를 일정량 회복합니다."}},
+ "도둑":{name:"도둑",req:5,from:["일반시민"],bonus:{dex:4,str:1},skills:["bash","ambush"],extra:["double"],passive:{name:"첫 수의 기회",desc:"전투에서 처음 ATB 게이지가 차면 일반 공격을 2회 할 수 있습니다."}},
+ "마술사":{name:"마술사",req:5,from:["일반시민"],bonus:{int:4,wis:2},skills:["fire","mend"],extra:["ice"],passive:{name:"마력 충전",desc:"ATB 게이지가 찰 때마다 MP를 일정량 회복합니다."}},
+ "기사":{name:"기사",req:10,from:["현장직원"],bonus:{str:2,con:3},skills:["bash","guard","smash"],extra:[],passive:{name:"현장 회복 강화",desc:"현장 회복 계열 패시브를 이어받습니다. 후속 전직에서 강화 예정입니다."}},
+ "암살자":{name:"암살자",req:10,from:["도둑"],bonus:{dex:3,str:2},skills:["bash","ambush","double"],extra:[],passive:{name:"첫 수의 기회 강화",desc:"도둑 계열 패시브를 이어받습니다. 후속 전직에서 강화 예정입니다."}},
+ "대마법사":{name:"대마법사",req:10,from:["마술사"],bonus:{int:3,wis:3},skills:["fire","mend","ice"],extra:[],passive:{name:"마력 충전 강화",desc:"마술사 계열 패시브를 이어받습니다. 후속 전직에서 강화 예정입니다."}}
+};
+
+const AREAS=[
+ {name:"폐허 마을 외곽",range:"Lv1~3",monsters:[
+   {name:"먼지괴물",emoji:"💨",lv:1,hp:70,atk:5,gold:25,xp:30,spd:70},
+   {name:"들쥐떼",emoji:"🐀",lv:2,hp:85,atk:6,gold:30,xp:35,spd:90}],
+  boss:{name:"폐허의 지배자",emoji:"🧟",lv:4,hp:320,atk:13,gold:180,xp:220,spd:75}},
+ {name:"방사능 지대",range:"Lv3~6",monsters:[
+   {name:"방사능물체",emoji:"☢️",lv:3,hp:120,atk:9,gold:50,xp:55,spd:65},
+   {name:"변이견",emoji:"🐕",lv:4,hp:150,atk:11,gold:65,xp:70,spd:85}],
+  boss:{name:"변이의 어미",emoji:"🐗",lv:7,hp:480,atk:19,gold:300,xp:360,spd:75}},
+ {name:"무너진 지하철",range:"Lv6~9",monsters:[
+   {name:"지하 슬라임",emoji:"🟢",lv:6,hp:220,atk:15,gold:90,xp:110,spd:60},
+   {name:"폐도의 파수꾼",emoji:"🤖",lv:7,hp:260,atk:17,gold:110,xp:130,spd:75}],
+  boss:{name:"폐도 관제 AI",emoji:"🖥️",lv:10,hp:680,atk:25,gold:420,xp:520,spd:70}},
+ {name:"붕괴된 빌딩숲",range:"Lv9~13",monsters:[
+   {name:"콘크리트 골렘",emoji:"🗿",lv:9,hp:380,atk:22,gold:160,xp:190,spd:55},
+   {name:"낙하 저격수",emoji:"🎯",lv:11,hp:340,atk:26,gold:180,xp:220,spd:95}],
+  boss:{name:"붕괴의 거인",emoji:"🏗️",lv:14,hp:950,atk:33,gold:600,xp:750,spd:60}},
+ {name:"어둠의 항구",range:"Lv13~17",monsters:[
+   {name:"항구의 망령",emoji:"👻",lv:13,hp:480,atk:30,gold:260,xp:300,spd:80},
+   {name:"심해 촉수",emoji:"🐙",lv:15,hp:560,atk:34,gold:310,xp:350,spd:70}],
+  boss:{name:"심연의 지배자",emoji:"🦑",lv:18,hp:1250,atk:43,gold:820,xp:1020,spd:75}},
+ {name:"마왕성 앞뜰",range:"Lv17~20",monsters:[
+   {name:"마왕의 파수병",emoji:"👹",lv:17,hp:650,atk:38,gold:450,xp:380,spd:75},
+   {name:"마왕의 사도",emoji:"😈",lv:20,hp:800,atk:45,gold:600,xp:400,spd:90}],
+  boss:{name:"마왕",emoji:"😈",lv:23,hp:1900,atk:58,gold:1300,xp:1600,spd:85}}
+];
+
+const NPC_LINES=[
+ "\"저 팔찌... 심상치 않아 보이는데.\"",
+ "\"바깥은 아직도 위험해. 조심해.\"",
+ "\"상점 주인이 요즘 물건이 잘 안 들어온다고 하더군.\"",
+ "\"예전엔 여기가 도시였다는 게 믿기지 않아.\"",
+ "\"강한 몬스터가 나오는 곳일수록 좋은 게 나온다던데.\""
+];
+
+const COMPANION_DEFS={
+ jack:{id:"jack",name:"정비공 잭",job:"현장직원",sprite:"assets/job-field-worker-cutout.png",questNames:["무너진 정비소","발전기 재가동","잭의 작업대"],passive:"게이지 100% 충전 시 자신을 제외한 파티원 전체 게이지 20% 회복"},
+ luna:{id:"luna",name:"그림자 루나",job:"도둑",sprite:"assets/job-thief-cutout.png",questNames:["잃어버린 배낭","조용한 수색","달빛 아래의 약속"],passive:"게이지 100% 충전 시 몬스터를 공격하며 골드를 강탈"},
+ bella:{id:"bella",name:"마술사 벨라",job:"마술사",sprite:"assets/job-magician-cutout.png",questNames:["빈 무대","사라진 소품","마지막 공연"],passive:"게이지 100% 충전 시 모자 속 트릭을 무작위 발동"}
+};
+const COMPANION_ORDER=["jack","luna","bella"];
+let P, enemy=null, auto=false, curArea=0, guardStat={}, scrollBuff=false;
+// ATB(게이지) 전투 상태
+let heroGauge=0, enemyGauge=0, heroReady=false, fleeReserved=false, battleTickTimer=null;
+let thiefExtraAttackReady=false, thiefPassiveArmed=false, pendingRecruitId=null;
+const TICK_MS=100;
+
+function newPlayer(){
+ return {
+  name:"나", job:"일반시민", level:1, xp:0, nextXp:100, gold:50,
+  hp:100, maxHp:100, mp:30, maxMp:30,
+  stat:{str:5,dex:5,con:5,int:5,wis:5}, sp:0, skillPts:0,
+  items:{potion:3, mana:1, elixir:0, scroll:0},
+  weapon:Object.assign({},WEAPON_SETS.general[0]),
+  armor:Object.assign({},GEAR.armors[0]),
+  accessory:Object.assign({},GEAR.accessories[0]),
+  skills:["bash"],
+  equipLevel:{weapon:0,armor:0,accessory:0},
+  ownedGear:{weapon:["club"],armor:["work"],accessory:["band"]},
+  companions:[],
+  affection:{jack:0,luna:0,bella:0},
+  companionQuests:{jack:0,luna:0,bella:0},
+  questInventory:[],
+  materials:{scrap:0},
+  dungeonProgress:{}, // {areaIndex:{kills, bossCleared}}
+  companionGauges:{jack:0,luna:0,bella:0}
+ };
+}
+
+function clampAudioLevel(value,fallback){
+ const level=Number(value);
+ return Number.isFinite(level)?Math.min(5,Math.max(1,Math.round(level))):fallback;
+}
+function loadAudioSettings(){
+ try{
+  const data=JSON.parse(localStorage.getItem(AUDIO_SETTINGS_KEY)||"null")||{};
+  audioSettings={bgm:clampAudioLevel(data.bgm,DEFAULT_AUDIO_SETTINGS.bgm),sfx:clampAudioLevel(data.sfx,DEFAULT_AUDIO_SETTINGS.sfx)};
+ }catch(e){audioSettings=Object.assign({},DEFAULT_AUDIO_SETTINGS)}
+}
+function saveAudioSettings(){
+ try{localStorage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify(audioSettings))}catch(e){}
+}
+function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(e){return false}}
+function refreshIntro(){document.getElementById("continueBtn").disabled=!hasSave()}
+function saveGame(notice){
+ try{
+  localStorage.setItem(SAVE_KEY,JSON.stringify({P,curArea}));
+  if(notice){document.getElementById("menu").classList.remove("show");battleLog("💾 저장했습니다.")}
+ }catch(e){if(notice)battleLog("⚠ 저장 실패")}
+}
+function loadSave(){
+ try{
+  const data=JSON.parse(localStorage.getItem(SAVE_KEY));
+  if(!data||!data.P)return false;
+  P=data.P; curArea=data.curArea||0;
+  const jobMigration={"노전직":"일반시민","전사":"현장직원","도적":"도둑","마법사":"마술사"};
+  if(jobMigration[P.job])P.job=jobMigration[P.job];
+  if(!P.items)P.items={potion:3,mana:1,elixir:0,scroll:0};
+  if(!P.equipLevel)P.equipLevel={weapon:0,armor:0,accessory:0};
+  if(P.equipLevel.accessory===undefined)P.equipLevel.accessory=0;
+  if(!P.companions)P.companions=[];
+  if(!P.affection)P.affection={jack:0,luna:0,bella:0};
+  if(!P.companionQuests)P.companionQuests={jack:0,luna:0,bella:0};
+  if(!P.questInventory)P.questInventory=[];
+  if(!P.materials)P.materials={scrap:0};
+  if(!P.companionGauges)P.companionGauges={jack:0,luna:0,bella:0};
+  COMPANION_ORDER.forEach(id=>{P.affection[id]=Math.min(100,Math.max(0,Number(P.affection[id])||0));P.companionQuests[id]=Math.min(3,Math.max(0,Number(P.companionQuests[id])||0));P.companionGauges[id]=Math.min(100,Math.max(0,Number(P.companionGauges[id])||0))});
+  if(!P.dungeonProgress)P.dungeonProgress={};
+  return true;
+ }catch(e){return false}
+}
+function hideIntro(){document.getElementById("intro").style.display="none"}
+function newGame(){
+ if(hasSave() && !confirm("기존 저장이 삭제되고 처음부터 시작합니다. 계속할까요?"))return;
+ try{localStorage.removeItem(SAVE_KEY)}catch(e){}
+ P=newPlayer(); enemy=null; curArea=0; stopAuto(); stopBattleTick();
+ hideIntro(); show("home"); saveGame(false);
+}
+function continueGame(){
+ if(!loadSave()){alert("저장된 게임이 없습니다.");return}
+ hideIntro(); show("home");
+}
+
+// ---------- derived stats ----------
+function maxHpOf(p){return Math.round(100+(p.level-1)*12+p.stat.con*6)}
+function maxMpOf(p){return Math.round(30+(p.level-1)*4+p.stat.wis*3+p.stat.int*2)}
+function pAtk(){return Math.round(P.weapon.atk+P.stat.str*1.5+P.equipLevel.weapon*4)}
+function pMatk(){return Math.round((P.weapon.mag||0)+P.stat.int*1.8+P.equipLevel.weapon*3)}
+function pDef(){return Math.round(P.armor.def+P.accessory.def+P.stat.con*0.6+P.equipLevel.armor*3+(P.equipLevel.accessory||0)*1)}
+function pHit(){return Math.min(99,Math.round((P.weapon.hit||90)+(P.accessory.hit||0)+P.stat.dex*0.2+(P.equipLevel.accessory||0)*2))}
+function pCrit(){return Math.round(5+P.stat.dex*0.5+(P.weapon.crit||0))}
+function pDoubleAtk(){return Math.min(40,Math.round(P.stat.dex*0.4))}
+function pEvasion(){return Math.min(30,Math.round(P.stat.dex*0.3))}
+function pDoubleSkill(){return Math.min(40,Math.round(P.stat.wis*0.4))}
+
+// ---------- ui plumbing ----------
+const BGM_URL="assets/camp-ambient.mp3";
+const DUNGEON_BGM_URL="assets/dungeon-01-bgm.mp3";
+let sfxContext=null;
+let sfxMaster=null;
+function bgmVolume(){return [0,0.04,0.08,0.14,0.22,0.32][audioSettings.bgm]||0.14}
+function sfxVolume(){return [0,0.2,0.38,0.58,0.78,0.95][audioSettings.sfx]||0.95}
+function applyAudioSettings(){
+ const audio=document.getElementById("bgm");
+ if(audio)audio.volume=bgmVolume();
+ if(sfxMaster&&sfxContext)sfxMaster.gain.setTargetAtTime(sfxVolume(),sfxContext.currentTime,0.03);
+}
+function setAudioSetting(type,value){
+ if(type!=="bgm"&&type!=="sfx")return;
+ audioSettings[type]=clampAudioLevel(value,DEFAULT_AUDIO_SETTINGS[type]);
+ saveAudioSettings();
+ applyAudioSettings();
+ openModal("settings");
+}
+function volumeButtons(type){
+ const current=audioSettings[type];
+ return [1,2,3,4,5].map(level=>`<button class="${current===level?'accent':''}" aria-pressed="${current===level}" onclick="setAudioSetting('${type}',${level})">${level}</button>`).join("");
+}
+function renderSettingsModal(){
+ let html=`<div class="title">게임 설정</div><div class="dim" style="margin-bottom:12px">배경음과 효과음의 크기를 따로 조절할 수 있습니다. 설정은 이 기기에 자동 저장됩니다.</div>`;
+ html+=`<div class="settingGroup"><div class="settingLabel"><b>배경음</b><span class="small">${audioSettings.bgm}/5</span></div><div class="volumeChoices">${volumeButtons("bgm")}</div></div>`;
+ html+=`<div class="settingGroup"><div class="settingLabel"><b>효과음</b><span class="small">${audioSettings.sfx}/5</span></div><div class="volumeChoices">${volumeButtons("sfx")}</div></div>`;
+ html+=`<div class="dim" style="margin-top:10px">현재 효과음은 UI 터치·타격·피격에 적용됩니다.</div><div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function getSfxContext(){
+ const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+ if(!AudioContextClass)return null;
+ if(!sfxContext){
+  sfxContext=new AudioContextClass();
+  sfxMaster=sfxContext.createGain();
+  sfxMaster.gain.value=sfxVolume();
+  sfxMaster.connect(sfxContext.destination);
+ }
+ if(sfxContext.state==="suspended")sfxContext.resume().catch(()=>{});
+ return sfxContext;
+}
+function playTone(ctx,frequency,duration,type,volume,offset=0,endFrequency=frequency){
+ const start=ctx.currentTime+offset;
+ const oscillator=ctx.createOscillator();
+ const gain=ctx.createGain();
+ oscillator.type=type;
+ oscillator.frequency.setValueAtTime(frequency,start);
+ if(endFrequency!==frequency)oscillator.frequency.exponentialRampToValueAtTime(Math.max(20,endFrequency),start+duration);
+ gain.gain.setValueAtTime(0.0001,start);
+ gain.gain.exponentialRampToValueAtTime(Math.max(0.0001,volume),start+0.008);
+ gain.gain.exponentialRampToValueAtTime(0.0001,start+duration);
+ oscillator.connect(gain); gain.connect(sfxMaster);
+ oscillator.start(start); oscillator.stop(start+duration+0.02);
+}
+function playSfx(kind){
+ const ctx=getSfxContext();
+ if(!ctx)return;
+ if(kind==="ui"){
+  playTone(ctx,620,0.055,"square",0.08,0,860);
+  playTone(ctx,930,0.045,"triangle",0.045,0.018,1040);
+ }else if(kind==="hit"){
+  playTone(ctx,190,0.11,"sawtooth",0.12,0,82);
+  playTone(ctx,88,0.14,"triangle",0.1,0.012,48);
+ }else if(kind==="hurt"){
+  playTone(ctx,145,0.14,"square",0.1,0,72);
+  playTone(ctx,70,0.18,"sawtooth",0.065,0.02,42);
+ }
+}
+function syncMusicForScreen(id){
+ const audio=document.getElementById("bgm");
+ if(!audio)return;
+ applyAudioSettings();
+ const dungeonTrack=id==="dungeon"||id==="battle";
+ const useDungeonMusic=dungeonTrack&&curArea===0;
+ const musicOn=id==="intro"||id==="home"||useDungeonMusic;
+ const track=useDungeonMusic?DUNGEON_BGM_URL:BGM_URL;
+ audio.dataset.screen=id;
+ if(musicOn){
+  if(!audio.src||!audio.src.endsWith(track)){
+   audio.src=track;
+   audio.currentTime=0;
+  }
+  const attempt=audio.play();
+  if(attempt&&attempt.catch)attempt.catch(()=>{});
+ }else{
+  audio.pause();
+  audio.currentTime=0;
+ }
+}
+function toggleMenu(){document.getElementById("menu").classList.toggle("show")}
+function show(id){
+ document.getElementById("menu").classList.remove("show");
+ document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ syncMusicForScreen(id);
+ if(id==="world")renderWorld();
+ if(id==="dungeon")renderDungeonHub();
+ update();
+}
+function update(){
+ if(!P)return;
+ P.maxHp=maxHpOf(P); P.maxMp=maxMpOf(P);
+ if(P.hp>P.maxHp)P.hp=P.maxHp;
+ if(P.mp>P.maxMp)P.mp=P.maxMp;
+ document.getElementById("headName").textContent=P.name;
+ document.getElementById("headClass").textContent=P.job+" · 레벨 "+P.level;
+ document.getElementById("headGold").textContent=P.gold+"G";
+ document.getElementById("headHpText").textContent="HP "+P.hp+"/"+P.maxHp;
+ document.getElementById("headMpText").textContent="MP "+P.mp+"/"+P.maxMp;
+ document.getElementById("headXpText").textContent="EXP "+P.xp+"/"+P.nextXp;
+ if(enemy){
+  document.getElementById("pHpBar").style.width=Math.max(0,P.hp/P.maxHp*100)+"%";
+  document.getElementById("pMpBar").style.width=Math.max(0,P.mp/P.maxMp*100)+"%";
+ }
+}
+function battleLog(t){
+ const el=document.getElementById("log");
+ el.innerHTML=t+"<br>"+el.innerHTML;
+}
+function isLightBackgroundPixel(data,index){
+ const r=data[index],g=data[index+1],b=data[index+2];
+ const max=Math.max(r,g,b),min=Math.min(r,g,b);
+ return max>205&&max-min<28;
+}
+function rasterizeTransparentSprite(img){
+ if(!img||img.dataset.rasterized)return;
+ img.dataset.rasterized="pending";
+ img.style.opacity="0";
+ const image=new Image();
+ image.onload=()=>{
+  try{
+   const size=384;
+   const canvas=document.createElement("canvas");
+   canvas.width=size;canvas.height=size;canvas.className="spriteCanvas";
+   canvas.setAttribute("aria-label",img.alt||"캐릭터");
+   canvas.dataset.source=img.currentSrc||img.src;
+   const ctx=canvas.getContext("2d",{willReadFrequently:true});
+   ctx.imageSmoothingEnabled=false;
+   ctx.drawImage(image,0,0,size,size);
+   const bitmap=ctx.getImageData(0,0,size,size), data=bitmap.data;
+   const visited=new Uint8Array(size*size), queue=[];
+   const enqueue=(x,y)=>{if(x<0||y<0||x>=size||y>=size)return;const pos=y*size+x;if(visited[pos])return;const idx=pos*4;if(isLightBackgroundPixel(data,idx)){visited[pos]=1;queue.push(pos)}};
+   for(let x=0;x<size;x++){enqueue(x,0);enqueue(x,size-1)}
+   for(let y=1;y<size-1;y++){enqueue(0,y);enqueue(size-1,y)}
+   for(let head=0;head<queue.length;head++){
+    const pos=queue[head],x=pos%size,y=Math.floor(pos/size),idx=pos*4;
+    data[idx+3]=0;
+    enqueue(x+1,y);enqueue(x-1,y);enqueue(x,y+1);enqueue(x,y-1);
+   }
+   for(let y=1;y<size-1;y++)for(let x=1;x<size-1;x++){
+    const pos=y*size+x,idx=pos*4;
+    if(data[idx+3]&&isLightBackgroundPixel(data,idx)){
+     const nearTransparent=!data[((y-1)*size+x)*4+3]||!data[((y+1)*size+x)*4+3]||!data[(y*size+x-1)*4+3]||!data[(y*size+x+1)*4+3];
+     if(nearTransparent)data[idx+3]=0;
+    }
+   }
+   ctx.putImageData(bitmap,0,0);
+   img.replaceWith(canvas);
+  }catch(e){img.dataset.rasterized="fallback";img.style.opacity="1"}
+ };
+ image.onerror=()=>{img.dataset.rasterized="error";img.style.opacity="1"};
+ image.crossOrigin="anonymous";
+ image.src=img.currentSrc||img.src;
+}
+function prepareTransparentSprites(root=document){
+ root.querySelectorAll("img[data-cutout=\"true\"]").forEach(rasterizeTransparentSprite);
+}
+function openModal(type){
+ document.getElementById("menu").classList.remove("show");
+ const box=document.getElementById("modalbox");
+ box.innerHTML=renderModal(type);
+ document.getElementById("modal").classList.add("show");
+ prepareTransparentSprites(box);
+}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+
+function renderModal(type){
+  if(type==="help")return `<div class="title">게임 정보</div><div class="dim">로그스토리는 멸망한 세계에서 전직하고 성장하며 몬스터를 사냥하는 방치형 RPG입니다.<br><br>월드맵에서 지역을 골라 전투를 시작하고, 상점에서 장비와 소모품을 구매하세요. 레벨업 시 능력치·스킬 포인트를 얻습니다.</div><div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+  if(type==="settings")return renderSettingsModal();
+  if(type==="job")return renderJobModal();
+ if(type==="shop")return renderShopModal();
+ if(type==="bag")return renderBagModal();
+ if(type==="equip")return renderEquipModal();
+  if(type==="skills")return renderSkillsModal();
+  if(type==="companions")return renderCompanionsModal();
+  if(type==="companionJoin")return renderCompanionJoinModal();
+  if(type==="battleSkills")return renderBattleSkillsModal();
+ if(type==="bossReady")return `<div class="title">👑 보스 출현 신호</div><div class="dim" style="margin-bottom:14px">이 던전의 몬스터 10마리를 모두 처치했습니다.<br><br>던전 깊은 곳에서 보스의 기척이 느껴집니다.</div>
+ <div class="grid">
+  <button class="danger" onclick="closeModal();huntBoss()">보스 사냥</button>
+  <button onclick="closeModal();show('dungeon')">던전으로</button>
+ </div>`;
+ return "";
+}
+
+function npc(){
+ document.getElementById("npcText").textContent=NPC_LINES[Math.floor(Math.random()*NPC_LINES.length)];
+}
+function heal(){
+ const missHp=P.maxHp-P.hp, missMp=P.maxMp-P.mp;
+ if(missHp<=0&&missMp<=0){document.getElementById("npcText").textContent="이미 상태가 온전합니다.";return}
+ const cost=Math.ceil(missHp*0.6+missMp*0.4);
+ if(P.gold<cost){document.getElementById("npcText").textContent="골드가 부족합니다. ("+cost+"G 필요)";return}
+ P.gold-=cost; P.hp=P.maxHp; P.mp=P.maxMp;
+ document.getElementById("npcText").textContent="치료를 받았다! (-"+cost+"G)";
+ update(); saveGame(false);
+}
+
+// ---------- job ----------
+function renderJobModal(){
+ const current=JOBS[P.job]||JOBS["일반시민"];
+ let html=`<div class="title">전직</div><div class="dim" style="margin-bottom:10px">현재 직업: ${P.job} (레벨 ${P.level})</div>`;
+ html+=`<div class="currentJobPreview"><div class="jobPreview"><img data-cutout="true" src="${heroSpriteFor(P.job)}" alt="현재 ${P.job} 모습"></div><div><b style="color:var(--gold)">현재 모습 · ${P.job}</b><br><span class="small">현재 패시브 · ${current.passive.name}<br>${current.passive.desc}</span></div></div>`;
+ let any=false;
+ for(const key in JOBS){
+  const j=JOBS[key];
+  if(key===P.job)continue;
+  if(j.from.length&&!j.from.includes(P.job))continue;
+  const ok=P.level>=j.req;
+  any=true;
+  html+=`<button class="choice ${ok?'':''}" ${ok?'':'disabled'} onclick="changeJob('${key}')">
+   <div class="jobChoice"><div class="jobPreview"><img data-cutout="true" src="${heroSpriteFor(j.name)}" alt="${j.name} 전직 후 모습"></div><div><b>${j.name}</b> <span class="small">(요구 레벨 ${j.req})</span><br>
+   <span class="small">전직 후 모습 미리보기 · ${j.passive.name}<br>${j.passive.desc}<br>스킬: ${j.skills.map(s=>SKILLS[s].name).join(", ")}</span></div></div>
+  </button>`;
+ }
+ if(!any)html+=`<div class="dim">현재 전직할 수 있는 직업이 없습니다.</div>`;
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function changeJob(key){
+ const j=JOBS[key];
+ if(P.level<j.req)return;
+ P.job=key;
+ for(const s in j.bonus)P.stat[s]+=j.bonus[s];
+ j.skills.forEach(s=>{if(!P.skills.includes(s))P.skills.push(s)});
+ closeModal(); update(); saveGame(false);
+ document.getElementById("npcText").textContent=key+"(으)로 전직했습니다!";
+}
+
+// ---------- shop ----------
+let shopTab="items", bagTab="general";
+function renderShopModal(){
+ let html=`<div class="title">상점 (보유 ${P.gold}G)</div>`;
+ html+=`<div class="grid" style="margin-bottom:10px">
+  <button onclick="shopTab='items';openModal('shop')" class="${shopTab==='items'?'accent':''}">소모품</button>
+  <button onclick="shopTab='gear';openModal('shop')" class="${shopTab==='gear'?'accent':''}">장비</button>
+ </div>`;
+ if(shopTab==="items"){
+  SHOP_ITEMS.forEach(it=>{
+   html+=`<div class="itemrow"><div class="info"><b>${it.name}</b><br><span class="small">${it.desc}</span></div>
+   <button onclick="buyItem('${it.id}')">${it.price}G</button></div>`;
+  });
+ }else{
+  [["weapon","무기 ("+jobCategory(P.job)+"형)"],["armor","방어구"],["accessory","장신구"]].forEach(([slot,label])=>{
+   html+=`<div class="small" style="margin:10px 0 4px;color:var(--gold)">${label}</div>`;
+   gearList(slot).forEach(g=>{
+    const owned=P.ownedGear[slot].includes(g.id);
+    let stat;
+    if(slot==="weapon")stat="공격 "+g.atk+(g.mag?"/마법 "+g.mag:"")+" · 명중 "+g.hit+" · 속도 "+g.speed+(g.crit?" · 치명+"+g.crit:"")+(g.stun?" · 기절"+g.stun+"%":"")+(g.bleed?" · 출혈"+g.bleed+"%":"");
+    else if(slot==="armor")stat="방어 "+g.def;
+    else stat="방어 "+g.def+(g.hit?"/명중 "+g.hit:"");
+    html+=`<div class="itemrow"><div class="info"><b>${g.name}</b><br><span class="small">${stat}</span>${g.desc?`<br><span class="small">${g.desc}</span>`:""}</div>
+    ${owned?`<button onclick="equipGear('${slot}','${g.id}');openModal('shop')">장착</button>`:`<button onclick="buyGear('${slot}','${g.id}')">${g.price}G</button>`}</div>`;
+   });
+  });
+ }
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function buyItem(id){
+ const it=SHOP_ITEMS.find(x=>x.id===id);
+ if(!hasGeneralBagSlot())return alert("일반 가방이 가득 찼습니다. (20/20)");
+ if(P.gold<it.price)return alert("골드가 부족합니다.");
+ P.gold-=it.price; P.items[id]=(P.items[id]||0)+1;
+ update(); saveGame(false); openModal("shop");
+}
+function buyGear(slot,id){
+ const g=gearList(slot).find(x=>x.id===id);
+ if(!P.ownedGear[slot].includes(id)&&!hasGeneralBagSlot())return alert("일반 가방이 가득 찼습니다. (20/20)");
+ if(P.gold<g.price)return alert("골드가 부족합니다.");
+ if(!P.ownedGear[slot].includes(id)){P.gold-=g.price; P.ownedGear[slot].push(id)}
+ equipGear(slot,id);
+ update(); saveGame(false); openModal("shop");
+}
+function equipGear(slot,id){
+ const g=gearList(slot).find(x=>x.id===id);
+ if(!g)return;
+ P[slot]=Object.assign({},g);
+ P.equipLevel[slot]=P.equipLevel[slot]||0;
+ update(); saveGame(false);
+}
+
+// ---------- equip modal ----------
+function renderEquipModal(){
+ const rows=[["weapon","무기"],["armor","방어구"],["accessory","장신구"]];
+ let html=`<div class="title">장비</div>`;
+ rows.forEach(([slot,label])=>{
+  const owned=P.ownedGear[slot];
+  html+=`<div class="equip"><div class="info"><b>${label}: ${P[slot].name}</b> <span class="small">(+${P.equipLevel[slot]||0})</span></div></div>`;
+  if(owned.length>1){
+   html+=`<div class="grid3" style="margin-bottom:10px">`;
+   owned.forEach(id=>{
+    const g=gearList(slot).find(x=>x.id===id);
+    if(!g)return;
+    html+=`<button ${P[slot].id===id?'class="accent"':''} onclick="equipGear('${slot}','${id}');openModal('equip')">${g.name}</button>`;
+   });
+   html+="</div>";
+  }
+ });
+ html+=`<div class="dim">공격력 ${pAtk()} · 마법력 ${pMatk()} · 방어력 ${pDef()} · 명중 ${pHit()}% · 치명 ${pCrit()}% · 연속공격 ${pDoubleAtk()}% · 회피 ${pEvasion()}%</div>`;
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+
+// ---------- bag / enhance ----------
+function generalBagCount(){
+ const itemCount=Object.values(P.items||{}).reduce((sum,count)=>sum+(Number(count)||0),0), gearCount=Object.values(P.ownedGear||{}).reduce((sum,list)=>sum+(Array.isArray(list)?list.length:0),0), materialCount=Object.values(P.materials||{}).reduce((sum,count)=>sum+(Number(count)||0),0);
+ return itemCount+gearCount+materialCount;
+}
+function hasGeneralBagSlot(amount=1){return generalBagCount()+amount<=20}
+function renderBagModal(){
+ let html=`<div class="title">가방</div><div class="grid" style="margin-bottom:10px"><button class="${bagTab==='general'?'accent':''}" onclick="bagTab='general';openModal('bag')">일반 가방</button><button class="${bagTab==='quest'?'accent':''}" onclick="bagTab='quest';openModal('bag')">퀘스트 가방</button></div>`;
+ if(bagTab==="quest"){
+  html+=`<div class="dim" style="margin-bottom:8px">퀘스트 아이템은 무제한으로 보관되며 사망해도 유지됩니다. 판매하거나 버릴 수 없습니다.</div>`;
+  if(!P.questInventory.length)html+=`<div class="itemrow"><div class="info"><b>비어 있음</b><br><span class="small">동료 퀘스트를 완료하면 이곳에 기록됩니다.</span></div></div>`;
+  P.questInventory.forEach(item=>{html+=`<div class="itemrow"><div class="info"><b>${item.name}</b><br><span class="small">퀘스트 전용 · 보관 중</span></div><span class="small">유지</span></div>`});
+ }else{
+  const names={potion:"회복 포션",mana:"마나 포션",elixir:"엘릭서",scroll:"강화 주문서"};
+  const itemCount=Object.values(P.items).reduce((sum,count)=>sum+(Number(count)||0),0), gearCount=Object.values(P.ownedGear||{}).reduce((sum,list)=>sum+(Array.isArray(list)?list.length:0),0), materialCount=Object.values(P.materials||{}).reduce((sum,count)=>sum+(Number(count)||0),0), carried=itemCount+gearCount+materialCount;
+  html+=`<div class="dim" style="margin-bottom:8px">일반 가방 ${carried}/20 슬롯 · 장비·소모품·재료는 사망 시 소멸합니다.</div>`;
+  for(const id in names){
+   html+=`<div class="itemrow"><div class="info"><b>${names[id]}</b> x${P.items[id]||0}</div>
+   ${id!=="scroll"?`<button ${((P.items[id]||0)<=0)?'disabled':''} onclick="useItem('${id}');openModal('bag')">사용</button>`:""}</div>`;
+  }
+  html+=`<div class="itemrow"><div class="info"><b>고철</b> x${P.materials.scrap||0}<br><span class="small">첫 번째 던전에서 몬스터를 처치하면 얻습니다.</span></div></div>`;
+  html+=`<div class="title" style="margin-top:14px">장비 강화</div><div class="dim" style="margin-bottom:8px">무기 안전 +${SAFE_LIMIT.weapon} · 방어구 안전 +${SAFE_LIMIT.armor} · 장신구 안전 +${SAFE_LIMIT.accessory}까지는 실패해도 아이템이 무사합니다. 그 이상은 실패 시 파괴될 수 있습니다.<br>강화 주문서(${P.items.scroll||0}개 보유): ${scrollBuff?"다음 강화에 적용됨(+20%)":"미적용"}</div>`;
+  const labels={weapon:"무기",armor:"방어구",accessory:"장신구"};
+  ["weapon","armor","accessory"].forEach(slot=>{
+   const lv=P.equipLevel[slot]||0, safe=SAFE_LIMIT[slot], cost=Math.round(30*(lv+1)*(slot==="accessory"?1.4:1)), chance=enhanceChance(slot);
+   html+=`<div class="itemrow"><div class="info"><b>${labels[slot]} +${lv}</b> <span class="small" style="color:${lv<safe?'var(--green)':'var(--red)'}">${lv<safe?"안전":"위험"}</span><br><span class="small">비용 ${cost}G · 성공률 ${chance}%${lv>=safe?" · 실패시 파괴 위험":""}</span></div><button onclick="enhance('${slot}')">강화</button></div>`;
+  });
+  html+=`<button class="wide" style="margin-top:6px" ${((P.items.scroll||0)<=0||scrollBuff)?'disabled':''} onclick="useScroll()">강화 주문서 사용</button>`;
+ }
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function useScroll(){
+ if((P.items.scroll||0)<=0)return;
+ P.items.scroll--; scrollBuff=true;
+ openModal("bag");
+}
+function enhanceChance(slot){
+ const lv=P.equipLevel[slot]||0;
+ const safe=SAFE_LIMIT[slot];
+ let chance;
+ if(lv<safe)chance=100;
+ else{const step=lv-safe+1; chance=Math.max(20,100-20*step)}
+ if(scrollBuff)chance=Math.min(100,chance+20);
+ return chance;
+}
+function enhance(slot){
+ const lv=P.equipLevel[slot]||0;
+ const safe=SAFE_LIMIT[slot];
+ const cost=Math.round(30*(lv+1)*(slot==="accessory"?1.4:1));
+ if(P.gold<cost){alert("골드가 부족합니다.");return}
+ P.gold-=cost;
+ const chance=enhanceChance(slot);
+ const ok=Math.random()*100<chance;
+ const wasSafe=lv<safe;
+ scrollBuff=false;
+ if(ok){
+  P.equipLevel[slot]=lv+1;
+  update(); saveGame(false); openModal("bag");
+  alert("강화에 성공했습니다! +"+P.equipLevel[slot]);
+  return;
+ }
+ if(wasSafe){
+  update(); saveGame(false); openModal("bag");
+  alert("강화에 실패했습니다. 안전 구간이라 아이템은 무사합니다.");
+  return;
+ }
+ const destroyed=Math.random()<0.5;
+ if(destroyed){
+  P.equipLevel[slot]=safe;
+  update(); saveGame(false); openModal("bag");
+  alert("💥 강화 실패! 아이템이 파괴되어 +"+safe+"(으)로 되돌아갔습니다.");
+ }else{
+  update(); saveGame(false); openModal("bag");
+  alert("강화에 실패했습니다. 아이템은 무사합니다.");
+ }
+}
+function useItem(id){
+ const inBattle=document.getElementById("battle").classList.contains("active");
+ if(inBattle&&enemy&&!heroReady){battleLog("⏳ ATB 게이지가 가득 차야 행동할 수 있습니다.");return}
+ if((P.items[id]||0)<=0){if(inBattle)battleLog("🎒 "+id+"이(가) 없습니다.");return}
+ if(inBattle&&enemy){heroReady=false;heroGauge=0;updateActionButtons()}
+ if(id==="potion"){P.hp=Math.min(P.maxHp,P.hp+Math.round(P.maxHp*0.35))}
+ else if(id==="mana"){P.mp=Math.min(P.maxMp,P.mp+Math.round(P.maxMp*0.4))}
+ else if(id==="elixir"){P.hp=P.maxHp;P.mp=P.maxMp}
+ P.items[id]--;
+ update(); saveGame(false);
+ if(document.getElementById("battle").classList.contains("active")){
+  battleLog("🧪 "+({potion:"회복 포션",mana:"마나 포션",elixir:"엘릭서"}[id])+" 사용!");
+ }
+}
+
+// ---------- companions / affection ----------
+function companionIsRecruited(id){return Array.isArray(P.companions)&&P.companions.includes(id)}
+function renderCompanionCard(id){
+ const def=COMPANION_DEFS[id], affection=P.affection[id]||0, questIndex=P.companionQuests[id]||0, recruited=companionIsRecruited(id), complete=questIndex>=3;
+ const questName=complete?"모든 퀘스트 완료":def.questNames[questIndex];
+ const status=recruited?"영입 완료":complete?"영입 대기":"퀘스트 "+(questIndex+1)+" / 3";
+ let html=`<div class="companionCard"><div class="companionPortrait"><img data-cutout="true" src="${def.sprite}" alt="${def.name} 초상"></div><div class="companionMeta"><b>${def.name}</b> <span class="small">${def.job}</span><br><span class="small">호감도 ${affection}% · ${status}</span><br><span class="small">${def.passive}</span><br><span class="small">${questName}</span></div>`;
+ if(!recruited&&!complete)html+=`<button onclick="completeCompanionQuest('${id}')">퀘스트 진행</button>`;
+ else if(!recruited&&complete)html+=`<button class="accent" onclick="pendingRecruitId='${id}';openModal('companionJoin')">영입</button>`;
+ html+=`</div>`;
+ return html;
+}
+function renderCompanionsModal(){
+ let html=`<div class="title">동료·호감도</div><div class="dim" style="margin-bottom:10px">퀘스트 3개를 완료하면 호감도 100%가 되고 영입할 수 있습니다. 영입 상태와 호감도는 주인공이 쓰러져도 유지됩니다.</div>`;
+ COMPANION_ORDER.forEach(id=>{html+=renderCompanionCard(id)});
+ html+=`  <div class="dim" style="margin-top:8px">현재 파티 ${P.companions.length}/3 · 일반 가방의 장비·소모품은 사망 시 소멸하며 퀘스트 아이템은 유지됩니다.</div><div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function completeCompanionQuest(id){
+ const def=COMPANION_DEFS[id], index=P.companionQuests[id]||0;
+ if(!def||index>=3)return;
+ const gains=[30,40,30], gained=gains[index];
+ P.companionQuests[id]=index+1;
+ P.affection[id]=Math.min(100,(P.affection[id]||0)+gained);
+ P.questInventory.push({id:id+"-quest-"+(index+1),name:def.questNames[index],companion:id});
+ saveGame(false); update();
+ battleLog("📜 "+def.name+" 퀘스트 완료! 호감도 +"+gained+"%");
+ if(P.affection[id]>=100){pendingRecruitId=id;openModal("companionJoin");return}
+ openModal("companions");
+}
+function renderCompanionJoinModal(){
+ const id=pendingRecruitId, def=COMPANION_DEFS[id];
+ if(!def)return renderCompanionsModal();
+ return `<div class="title">🤝 동료 영입</div><div class="dim" style="margin-bottom:12px"><b style="color:var(--gold)">${def.name}</b>과(와)의 신뢰가 100%에 도달했습니다.<br><br>이제부터 전투에서 ${def.passive}.</div><button class="accent wide" onclick="recruitCompanion('${id}')">${def.name}을(를) 파티에 영입</button><div class="closeRow"><button onclick="pendingRecruitId=null;openModal('companions')">나중에</button></div>`;
+}
+function recruitCompanion(id){
+ if(!COMPANION_DEFS[id])return;
+ if(!P.companions.includes(id))P.companions.push(id);
+ pendingRecruitId=null; saveGame(false); update();
+ document.getElementById("npcText").textContent=COMPANION_DEFS[id].name+"이(가) 파티에 합류했습니다!";
+ openModal("companions");
+}
+function renderCompanionBattleHud(){
+ const hud=document.getElementById("companionBattleHud");
+ if(!hud)return;
+ if(!P||!P.companions.length){hud.innerHTML="";return}
+ hud.innerHTML=P.companions.map(id=>{
+  const def=COMPANION_DEFS[id], gauge=Math.round(P.companionGauges[id]||0), ready=gauge>=100;
+  return `<div class="companionBattleCard"><b>${def.name}</b><span class="small">${ready?"✨ 특수 행동 대기":"게이지 "+gauge+"%"}</span><div class="companionGauge"><div class="fill" style="width:${gauge}%"></div></div></div>`;
+ }).join("");
+}
+function advanceCompanionGauges(){
+ if(!P||!enemy||!P.companions.length)return;
+ for(const id of P.companions){
+  P.companionGauges[id]=Math.min(100,(P.companionGauges[id]||0)+3);
+  if(P.companionGauges[id]>=100){P.companionGauges[id]=0;companionAction(id);if(!enemy)return}
+ }
+}
+function companionAction(id){
+ const def=COMPANION_DEFS[id];
+ if(!def||!enemy)return;
+ if(id==="jack"){
+  const beforeHero=heroGauge;
+  heroGauge=Math.min(100,heroGauge+20);
+  for(const other of P.companions){if(other!=="jack")P.companionGauges[other]=Math.min(100,(P.companionGauges[other]||0)+20)}
+  battleLog("🔧 정비공 잭: 파티 게이지를 정비했다! 주인공 게이지 +"+Math.round(heroGauge-beforeHero)+"% · 동료 게이지 +20%");
+  playSfx("ui");
+  if(heroGauge>=100&&!heroReady){heroReady=true;onHeroGaugeReady();updateActionButtons()}
+ }else if(id==="luna"){
+  const stolen=Math.max(5,Math.round(enemy.gold*.2));
+  enemy.gold=Math.max(0,enemy.gold-stolen); P.gold+=stolen;
+  const dmg=Math.max(1,Math.round(pAtk()*.55)); enemy.hp-=dmg;
+  playSfx("hit"); triggerMotion("#enemySprite","recoilMotion");
+  battleLog("🌙 그림자 루나: "+dmg+" 피해를 주고 "+stolen+"G를 훔쳤다!");
+  updateBattleBars(); if(enemy.hp<=0)winBattle();
+ }else if(id==="bella"){
+  const roll=Math.random()*100;
+  if(roll<40){const dmg=Math.max(1,Math.round(dealDamage(pMatk()*1.8).dmg));enemy.hp-=dmg;playSfx("hit");triggerMotion("#enemySprite","recoilMotion");battleLog("🎩 벨라의 모자 속 비둘기! 적에게 "+dmg+"의 무속성 피해!");}
+  else if(roll<80){const hp=Math.max(1,Math.round(P.maxHp*.2)),mp=Math.max(1,Math.round(P.maxMp*.2));P.hp=Math.min(P.maxHp,P.hp+hp);P.mp=Math.min(P.maxMp,P.mp+mp);playSfx("ui");battleLog("🥃 벨라의 모자 속 위스키! 파티 HP/MP 회복!");}
+  else{const chance=enemy.isBoss?30:70;if(Math.random()*100<chance){enemy.stunTurns=(enemy.stunTurns||0)+1;playSfx("hurt");battleLog("💣 벨라의 마술폭탄! "+enemy.name+"이(가) 기절했다!");}else battleLog("💣 벨라의 마술폭탄이 빗나갔다!");}
+  updateBattleBars();if(enemy&&enemy.hp<=0)winBattle();
+ }
+}
+
+// ---------- skills / stats modal ----------
+function renderSkillsModal(){
+ let html=`<div class="title">능력치</div><div class="dim" style="margin-bottom:6px">남은 포인트: ${P.sp}</div>`;
+ const labels={str:"힘 · 공격력",dex:"민첩 · 연속공격/회피",con:"체질 · HP/방어력",int:"지능 · 마법공격력",wis:"위즈 · MP/스킬 재사용"};
+ for(const s in labels){
+  html+=`<div class="statrow"><span>${labels[s]}</span><span>${P.stat[s]} <button style="padding:3px 8px;margin-left:6px" ${P.sp<=0?'disabled':''} onclick="allocStat('${s}')">+</button></span></div>`;
+ }
+ html+=`<div class="dim" style="margin:6px 0 10px">연속공격 확률 ${pDoubleAtk()}% · 회피율 ${pEvasion()}% · 스킬 재사용 확률 ${pDoubleSkill()}%</div>`;
+ html+=`<div class="title" style="margin-top:14px">스킬 (포인트 ${P.skillPts})</div>`;
+ const job=JOBS[P.job];
+ job.extra.forEach(sid=>{
+  const known=P.skills.includes(sid);
+  const sk=SKILLS[sid];
+  html+=`<div class="itemrow"><div class="info"><b>${sk.name}</b><br><span class="small">${sk.desc}</span></div>
+  ${known?'<span class="small">습득함</span>':`<button ${P.skillPts<=0?'disabled':''} onclick="learnSkill('${sid}')">배우기</button>`}</div>`;
+ });
+ html+=`<div class="title" style="margin-top:14px">보유 스킬</div>`;
+ P.skills.forEach(sid=>{
+  const sk=SKILLS[sid];
+  html+=`<span class="tag">${sk.name} (MP${sk.cost})</span>`;
+ });
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function allocStat(s){
+ if(P.sp<=0)return;
+ P.sp--; P.stat[s]++;
+ update(); saveGame(false); openModal("skills");
+}
+function learnSkill(sid){
+ if(P.skillPts<=0||P.skills.includes(sid))return;
+ P.skillPts--; P.skills.push(sid);
+ saveGame(false); openModal("skills");
+}
+
+// ---------- world / dungeon / battle ----------
+function ensureDungeonProgress(i){
+ if(!P.dungeonProgress)P.dungeonProgress={};
+ if(!P.dungeonProgress[i])P.dungeonProgress[i]={kills:0,bossCleared:false};
+ return P.dungeonProgress[i];
+}
+function isAreaUnlocked(i){
+ if(i===0)return true;
+ const prev=P.dungeonProgress[i-1];
+ return !!(prev&&prev.bossCleared);
+}
+function renderWorld(){
+ const grid=document.getElementById("worldGrid");
+ grid.innerHTML="";
+ AREAS.forEach((a,i)=>{
+  const unlocked=isAreaUnlocked(i);
+  const prog=P.dungeonProgress[i];
+  const btn=document.createElement("button");
+  btn.className="loc"+(unlocked?"":" locked");
+  if(unlocked){
+   const killTxt=prog?` (${Math.min(prog.kills,10)}/10${prog.bossCleared?" ✅":""})`:"";
+   btn.innerHTML=`<b>${a.name}</b><span>${a.range}${killTxt}</span>`;
+   btn.onclick=()=>enterArea(i);
+  }else{
+   btn.innerHTML=`<b>🔒 ${a.name}</b><span>이전 지역 보스 처치 필요</span>`;
+   btn.onclick=()=>alert(AREAS[i-1].name+" 보스 처치시 입장가능합니다.");
+  }
+  grid.appendChild(btn);
+ });
+}
+function enterArea(i){
+ if(!isAreaUnlocked(i))return;
+ curArea=i;
+ ensureDungeonProgress(i);
+ show("dungeon");
+}
+function updateDungeonProgressUi(){
+ const a=AREAS[curArea];
+ const prog=ensureDungeonProgress(curArea);
+ const k=Math.min(prog.kills,10);
+ const countText="["+k+"/10]";
+ const title=document.getElementById("dungeonTitle"); if(title)title.textContent=a.name;
+ const desc=document.getElementById("dungeonDesc"); if(desc)desc.textContent=a.range+" 지역 · 몬스터를 사냥해 처치 수를 쌓으세요.";
+ const count=document.getElementById("dungeonKillCount"); if(count)count.textContent=countText+(prog.bossCleared?" (보스 처치 완료)":"");
+ const killBar=document.getElementById("dungeonKillBar"); if(killBar)killBar.style.width=(k*10)+"%";
+ const battleArea=document.getElementById("battleArea"); if(battleArea)battleArea.classList.toggle("firstDungeon",curArea===0);
+ const battleTitle=document.getElementById("battleDungeonName"); if(battleTitle)battleTitle.textContent=a.name;
+ const battleProgress=document.getElementById("battleDungeonProgress"); if(battleProgress)battleProgress.textContent=countText+(prog.bossCleared?" ✓":"");
+ const bossBtn=document.getElementById("bossBtn");
+ if(bossBtn){bossBtn.disabled=prog.kills<10;bossBtn.textContent=prog.kills<10?`👑 보스 사냥 (${prog.kills}/10 필요)`:"👑 보스 사냥";}
+}
+function renderDungeonHub(){updateDungeonProgressUi();}
+function huntMonster(){
+ const prog=ensureDungeonProgress(curArea);
+ if(prog.kills>=10&&!prog.bossCleared){openModal("bossReady");return;}
+ const pool=AREAS[curArea].monsters;
+ const m=pool[Math.floor(Math.random()*pool.length)];
+ startBattle(m,false);
+}
+function huntBoss(){
+ const prog=ensureDungeonProgress(curArea);
+ if(prog.kills<10){battleLog("아직 보스에게 도전할 수 없다. "+(10-prog.kills)+"마리를 더 처치해야 한다.");return}
+ closeModal();
+ startBattle(AREAS[curArea].boss,true);
+}
+function heroSpriteFor(job=P.job){
+ if(job==="현장직원"||job==="기사")return "assets/job-field-worker-cutout.png";
+ if(job==="도둑"||job==="암살자")return "assets/job-thief-cutout.png";
+ if(job==="마술사"||job==="대마법사")return "assets/job-magician-cutout.png";
+ return "assets/job-citizen-cutout.png";
+}
+function monsterSpriteFor(m,isBoss){
+ if(isBoss)return "assets/chibi-boss-alpha.png";
+ if(/들쥐/.test(m.name))return "assets/chibi-rat-swarm-alpha.png";
+ if(/견/.test(m.name))return "assets/chibi-hound-alpha.png";
+ if(/파수|저격|골렘|방사능|관제/.test(m.name))return "assets/chibi-raider-alpha.png";
+ return "assets/chibi-mutant-alpha.png";
+}
+function startBattle(m,isBoss){
+ if(!P.companions)P.companions=[];
+ if(!P.companionGauges)P.companionGauges={jack:0,luna:0,bella:0};
+ if(!P.materials)P.materials={scrap:0};
+ enemy={name:m.name,emoji:m.emoji,lv:m.lv,hp:m.hp,maxHp:m.hp,atk:m.atk,gold:m.gold,xp:m.xp,spd:m.spd||75,isBoss:!!isBoss,stunTurns:0,bleedTurns:0,bleedDmg:0};
+ P.maxHp=maxHpOf(P); P.maxMp=maxMpOf(P);
+ updateDungeonProgressUi();
+  const heroSprite=document.getElementById("heroSprite");
+  heroSprite.innerHTML='<span class="sprite-shadow" aria-hidden="true"></span><img data-cutout="true" src="'+heroSpriteFor()+'" alt="'+P.job+' 캐릭터">';
+  prepareTransparentSprites(heroSprite);
+  const enemySprite=document.getElementById("enemySprite");
+  enemySprite.innerHTML='<span class="sprite-shadow" aria-hidden="true"></span><img src="'+monsterSpriteFor(m,isBoss)+'" alt="'+m.name+'">';
+ enemySprite.classList.remove("hitFlash");
+ document.getElementById("enemyName").innerHTML=(isBoss?"👑 ":"")+m.name+" Lv."+m.lv+
+  `<div class="hpmini"><div class="fill" id="eHpBar" style="width:100%;background:var(--red)"></div></div>`+
+  `<div class="gaugewrap enemy" style="width:110px;height:6px;background:#1c1d26;border:1px solid #000;margin-top:3px;overflow:hidden"><div class="fill" id="eGaugeBar" style="width:0%;height:100%;background:#c0392b;transition:width .1s linear"></div></div>`;
+ document.getElementById("log").innerHTML="";
+ battleLog(isBoss?("👑 보스 "+m.name+"이(가) 나타났다!"):("⚔️ "+m.name+"과(와) 조우했다!"));
+  heroGauge=0; enemyGauge=0; heroReady=false; fleeReserved=false;
+  COMPANION_ORDER.forEach(id=>{P.companionGauges[id]=0});
+  thiefExtraAttackReady=false; thiefPassiveArmed=false;
+ show("battle");
+ updateActionButtons();
+ updateBattleBars();
+ startBattleTick();
+}
+function flashResourceBar(id){
+ const el=document.getElementById(id); if(!el)return;
+ el.classList.remove("damageFlash"); void el.offsetWidth; el.classList.add("damageFlash");
+ setTimeout(()=>el.classList.remove("damageFlash"),560);
+}
+function updateBattleBars(){
+ const hpBar=document.getElementById("pHpBar"); if(hpBar)hpBar.style.width=Math.max(0,P.hp/P.maxHp*100)+"%";
+ const mpBar=document.getElementById("pMpBar"); if(mpBar)mpBar.style.width=Math.max(0,P.mp/P.maxMp*100)+"%";
+  renderCompanionBattleHud();
+  const hpText=document.getElementById("pHpText"); if(hpText)hpText.textContent="HP "+P.hp+" / "+P.maxHp;
+ const mpText=document.getElementById("pMpText"); if(mpText)mpText.textContent="MP "+P.mp+" / "+P.maxMp;
+ const xpText=document.getElementById("pXpText"); if(xpText)xpText.textContent="EXP "+P.xp+" / "+P.nextXp;
+ const xpBar=document.getElementById("pXpBar"); if(xpBar)xpBar.style.width=Math.min(100,P.xp/P.nextXp*100)+"%";
+ const hg=document.getElementById("heroGaugeBar"); if(hg)hg.style.width=heroGauge+"%";
+ if(enemy){
+  const eb=document.getElementById("eHpBar"); if(eb)eb.style.width=Math.max(0,enemy.hp/enemy.maxHp*100)+"%";
+  const eg=document.getElementById("eGaugeBar"); if(eg)eg.style.width=enemyGauge+"%";
+ }
+}
+function updateActionButtons(){
+ const atk=document.getElementById("atkBtn"), sk=document.getElementById("skillBtn"), potion=document.getElementById("potionBtn");
+ if(atk)atk.disabled=!heroReady;
+ if(sk)sk.disabled=!heroReady;
+ if(potion)potion.disabled=!!enemy&&!heroReady;
+ const tag=document.getElementById("heroReadyTag");
+ if(tag)tag.textContent=heroReady?(auto?"⚡ 자동 행동 대기":"⏸ 수동 대기 · 행동 선택"):"⌛ 행동 게이지 충전 중";
+ const battleEl=document.getElementById("battleArea");
+ const state=document.getElementById("battleState");
+ const stateTitle=document.getElementById("battleStateTitle");
+ const stateText=document.getElementById("battleStateText");
+ const waiting=heroReady&&!auto;
+ if(battleEl)battleEl.classList.toggle("waiting",waiting);
+ if(state){
+  state.classList.toggle("show",!!heroReady);
+  state.setAttribute("aria-hidden",heroReady?"false":"true");
+ }
+ if(stateTitle)stateTitle.textContent=waiting?"WAIT MODE":"AUTO MODE";
+ if(stateText)stateText.textContent=waiting?"공격·스킬·포션·도주 선택 후 재개":"자동 행동을 준비하고 있습니다";
+ const fb=document.getElementById("fleeBtn");
+ if(fb)fb.textContent=fleeReserved?"🏃 도주 예약됨":"🏃 도주";
+}
+function startBattleTick(){
+ stopBattleTick();
+ battleTickTimer=setInterval(tickBattle,TICK_MS);
+}
+function stopBattleTick(){
+ if(battleTickTimer){clearInterval(battleTickTimer);battleTickTimer=null}
+}
+function onHeroGaugeReady(){
+ if(!P)return;
+ if(P.job==="현장직원"||P.job==="기사"){
+  const before=P.hp;
+  const amount=Math.max(5,Math.round(P.maxHp*0.08));
+  P.hp=Math.min(P.maxHp,P.hp+amount);
+  const healed=P.hp-before;
+  if(healed>0){flashResourceBar("pHpBarWrap");battleLog("🧰 현장 회복: HP "+healed+" 회복!");}
+ }
+ if(P.job==="마술사"||P.job==="대마법사"){
+  const before=P.mp;
+  const amount=Math.max(3,Math.round(P.maxMp*0.1));
+  P.mp=Math.min(P.maxMp,P.mp+amount);
+  const restored=P.mp-before;
+  if(restored>0){flashResourceBar("pMpBarWrap");battleLog("🎩 마력 충전: MP "+restored+" 회복!");}
+ }
+ if((P.job==="도둑"||P.job==="암살자")&&!thiefPassiveArmed){
+  thiefPassiveArmed=true; thiefExtraAttackReady=true;
+  battleLog("🃏 첫 수의 기회: 다음 일반 공격이 2회 연속 발동!");
+ }
+ updateBattleBars();
+}
+function tickBattle(){
+ if(!enemy||!P||P.hp<=0){return}
+ if(document.getElementById("modal").classList.contains("show"))return; // 메뉴를 보는 동안은 게이지 정지(Wait 모드)
+ if(!heroReady){
+  heroGauge=Math.min(100,heroGauge+(P.weapon.speed||100)*0.03);
+  if(heroGauge>=100){
+   heroReady=true;
+   onHeroGaugeReady();
+   updateActionButtons();
+   if(fleeReserved){
+    doFleeAttempt();
+    return;
+   }
+  }
+ }
+  if(heroReady&&!auto){
+  updateBattleBars();
+  return;
+ }
+  advanceCompanionGauges();
+  if(heroReady&&!auto){
+  updateBattleBars();
+  return;
+ }
+ if(enemy){
+  enemyGauge=Math.min(100,enemyGauge+(enemy.spd||75)*0.03);
+  if(enemyGauge>=100){
+   enemyGauge=0;
+   enemyAction();
+  }
+ }
+ updateBattleBars();
+ if(auto&&heroReady&&enemy)attack();
+}
+function dealDamage(base,kind){
+ const isCrit=Math.random()*100<pCrit();
+ let dmg=Math.round(base*(0.85+Math.random()*0.3));
+ if(isCrit)dmg=Math.round(dmg*1.6);
+ return {dmg:Math.max(1,dmg),crit:isCrit};
+}
+function triggerMotion(selector,className){
+ const el=document.querySelector(selector); if(!el)return;
+ const isHero=selector==="#heroSprite";
+ const isAttack=className==="attackMotion";
+ const distance=isAttack?(isHero?112:-92):(isHero?-30:34);
+ const keyframes=isAttack
+  ?[{transform:"translateX(0) scale(1)"},{transform:"translateX("+distance+"px) scale(1.12)"},{transform:"translateX("+(distance*0.62)+"px) scale(1.04)"},{transform:"translateX(0) scale(1)"}]
+  :[{transform:"translateX(0) rotate(0deg)"},{transform:"translateX("+distance+"px) rotate("+(isHero?-5:6)+"deg)"},{transform:"translateX("+(distance*0.35)+"px) rotate("+(isHero?-2:2)+"deg)"},{transform:"translateX(0) rotate(0deg)"}];
+ if(el.animate){el.animate(keyframes,{duration:isAttack?620:480,easing:"cubic-bezier(.23,1,.32,1)",fill:"none"});}
+ else{el.classList.remove(className); void el.offsetWidth; el.classList.add(className); setTimeout(()=>el.classList.remove(className),650)}
+ if(className==="recoilMotion"){
+  el.classList.remove("hitFlash"); void el.offsetWidth; el.classList.add("hitFlash");
+  setTimeout(()=>el.classList.remove("hitFlash"),420);
+ }
+}
+function attack(){
+ if(!enemy||!heroReady)return;
+ const thiefDouble=thiefExtraAttackReady;
+ thiefExtraAttackReady=false;
+ heroReady=false; heroGauge=0; updateActionButtons();
+ triggerMotion("#heroSprite","attackMotion");
+ const hitOk=Math.random()*100<pHit();
+ if(!hitOk){battleLog("💨 공격이 빗나갔다!");return}
+ triggerMotion("#enemySprite","recoilMotion");
+ doPhysicalHit();
+ if(!enemy)return;
+ if(thiefDouble){
+  battleLog("🃏 도둑 패시브: 일반 공격 2회!");
+  triggerMotion("#heroSprite","attackMotion");
+  triggerMotion("#enemySprite","recoilMotion");
+  doPhysicalHit();
+  if(!enemy)return;
+ }else if(Math.random()*100<pDoubleAtk()){
+  battleLog("💫 민첩 발동! 연속 공격!");
+  doPhysicalHit();
+ }
+}
+function doPhysicalHit(){
+ const {dmg,crit}=dealDamage(pAtk());
+ playSfx("hit");
+ enemy.hp-=dmg;
+ battleLog((crit?"💥 치명타! ":"⚔️ ")+"적에게 "+dmg+"의 피해!");
+ applyWeaponEffects();
+ updateBattleBars();
+ if(enemy&&enemy.hp<=0)winBattle();
+}
+function applyWeaponEffects(){
+ const w=P.weapon;
+ if(!enemy)return;
+ if(w.stun&&Math.random()*100<w.stun){
+  enemy.stunTurns=(enemy.stunTurns||0)+1;
+  battleLog("😵 "+enemy.name+"이(가) 기절했다!");
+ }
+ if(w.bleed&&Math.random()*100<w.bleed){
+  enemy.bleedTurns=3; enemy.bleedDmg=Math.max(1,Math.round(pAtk()*0.25));
+  battleLog("🩸 "+enemy.name+"에게 출혈이 발생했다!");
+ }
+}
+function renderBattleSkillsModal(){
+ let html=`<div class="title">스킬 선택 (MP ${P.mp}/${P.maxMp})</div>`;
+ if(!heroReady)html+=`<div class="dim" style="margin-bottom:8px">아직 행동 게이지가 다 차지 않았습니다.</div>`;
+ P.skills.forEach(sid=>{
+  const sk=SKILLS[sid];
+  html+=`<button class="choice" ${(!heroReady||P.mp<sk.cost)?'disabled':''} onclick="closeModal();skillAttack('${sid}')"><b>${sk.name}</b> <span class="small">MP${sk.cost}</span><br><span class="small">${sk.desc}</span></button>`;
+ });
+ html+=`<div class="closeRow"><button onclick="closeModal()">닫기</button></div>`;
+ return html;
+}
+function skillAttack(sid){
+ if(!enemy||!heroReady)return;
+ const sk=SKILLS[sid];
+ if(P.mp<sk.cost){battleLog("💧 마나가 부족합니다.");return}
+ heroReady=false; heroGauge=0; updateActionButtons();
+ const previousMp=P.mp;
+ P.mp-=sk.cost;
+ if(P.mp<previousMp)flashResourceBar("pMpBarWrap");
+ castSkill(sk);
+ if(!enemy)return;
+ if(sk.kind!=="heal"&&Math.random()*100<pDoubleSkill()){
+  battleLog("🔮 위즈 발동! 스킬 재사용!");
+  castSkill(sk);
+ }
+}
+function castSkill(sk){
+ if(sk.kind==="heal"){
+  const amt=Math.round(P.maxHp*sk.heal+P.stat.wis*2);
+  P.hp=Math.min(P.maxHp,P.hp+amt);
+  battleLog("✨ "+sk.name+"! 체력 "+amt+" 회복!");
+  updateBattleBars();
+  return;
+ }
+ triggerMotion("#heroSprite","attackMotion");
+ const base=(sk.kind==="magic"?pMatk():pAtk())*sk.power;
+ const hits=sk.hits||1;
+ let total=0,anyCrit=false;
+ for(let i=0;i<hits;i++){const r=dealDamage(base/hits);total+=r.dmg;if(r.crit)anyCrit=true}
+ enemy.hp-=total;
+ playSfx("hit");
+ triggerMotion("#enemySprite","recoilMotion");
+ battleLog((anyCrit?"💥 ":"✨ ")+sk.name+"! 적에게 "+total+"의 피해!");
+ updateBattleBars();
+ if(enemy.hp<=0)winBattle();
+}
+function enemyAction(){
+ if(!enemy||enemy.hp<=0)return;
+ if(enemy.bleedTurns>0){
+  enemy.hp-=enemy.bleedDmg; enemy.bleedTurns--;
+  battleLog("🩸 출혈 피해 "+enemy.bleedDmg+"!");
+  updateBattleBars();
+  if(enemy.hp<=0){winBattle();return}
+ }
+ if(enemy.stunTurns>0){
+  enemy.stunTurns--;
+  battleLog("😵 "+enemy.name+"이(가) 기절해서 움직이지 못한다!");
+  return;
+ }
+ if(Math.random()*100<pEvasion()){
+  battleLog("💨 "+enemy.name+"의 공격을 회피했다!");
+  return;
+ }
+ triggerMotion("#enemySprite","attackMotion");
+ const dmg=Math.max(1,Math.round((enemy.atk-pDef()*0.5)*(0.85+Math.random()*0.3)));
+ const previousHp=P.hp;
+ P.hp-=dmg;
+ playSfx("hurt");
+ triggerMotion("#heroSprite","recoilMotion");
+ if(P.hp<previousHp)flashResourceBar("pHpBarWrap");
+ battleLog("👾 "+enemy.name+"의 공격! "+dmg+"의 피해를 입었다.");
+ updateBattleBars();
+ if(P.hp<=0)loseBattle();
+}
+function winBattle(){
+ stopBattleTick();
+ const g=enemy.gold, x=enemy.xp, wasBoss=enemy.isBoss;
+ P.gold+=g; P.xp+=x;
+ if(!P.materials)P.materials={scrap:0};
+ const scrapGain=1+Math.floor(Math.random()*2); P.materials.scrap=(P.materials.scrap||0)+scrapGain;
+ battleLog("🎉 "+enemy.name+" 처치! (+"+g+"G, +"+x+"XP, 고철 "+scrapGain+"개)");
+ let leveled=false;
+ while(P.xp>=P.nextXp){
+  P.xp-=P.nextXp; P.level++; P.nextXp=Math.round(P.nextXp*1.18);
+  P.sp+=3; if(P.level%2===0)P.skillPts++;
+  leveled=true;
+ }
+ if(leveled){
+  P.maxHp=maxHpOf(P); P.maxMp=maxMpOf(P);
+  P.hp=P.maxHp; P.mp=P.maxMp;
+  battleLog("⭐ 레벨 업! 현재 레벨 "+P.level+" · HP/MP가 모두 회복되었습니다.");
+ }
+ const prog=ensureDungeonProgress(curArea);
+ P.hp=Math.min(P.maxHp,P.hp); enemy=null;
+ if(wasBoss){
+  prog.bossCleared=true;
+  battleLog("👑 보스를 처치했다! 다음 스테이지가 해금되었습니다.");
+  update(); saveGame(false);
+  setTimeout(()=>show("world"),1400);
+  return;
+ }
+ prog.kills++;
+ updateDungeonProgressUi();
+ update(); saveGame(false);
+ if(prog.kills>=10){
+  battleLog("👑 처치 목표 달성! 보스 사냥 준비가 되었다.");
+  setTimeout(()=>{
+   if(document.getElementById("battle").classList.contains("active"))openModal("bossReady");
+  },900);
+  return;
+ }
+ setTimeout(()=>{
+  if(document.getElementById("battle").classList.contains("active"))huntMonster();
+ },1200);
+}
+function clearRunInventoryOnDeath(){
+ P.items={potion:0,mana:0,elixir:0,scroll:0};
+ P.weapon=Object.assign({},WEAPON_SETS.general[0]);
+ P.armor=Object.assign({},GEAR.armors[0]);
+ P.accessory=Object.assign({},GEAR.accessories[0]);
+ P.equipLevel={weapon:0,armor:0,accessory:0};
+ P.ownedGear={weapon:["club"],armor:["work"],accessory:["band"]};
+ P.companionGauges={jack:0,luna:0,bella:0};
+ P.materials={scrap:0};
+ scrollBuff=false;
+}
+function loseBattle(){
+ stopBattleTick();
+ clearRunInventoryOnDeath();
+ battleLog("💀 쓰러졌다... 장비와 소모품이 사라졌다. 호감도·영입 상태는 유지된다.");
+ P.gold=Math.floor(P.gold*0.7);
+ P.hp=Math.max(1,Math.round(P.maxHp*0.3));
+ P.mp=Math.round(P.maxMp*0.3);
+ enemy=null;
+ update(); saveGame(false);
+ setTimeout(()=>show("home"),1400);
+}
+function requestFlee(){
+ if(!enemy)return;
+ if(fleeReserved){
+  battleLog("🏃 이미 도주를 예약했다. 성공할 때까지 자동으로 시도한다.");
+  return;
+ }
+ fleeReserved=true;
+ updateActionButtons();
+ battleLog("🏃 도주를 예약했다. 성공할 때까지 자동으로 시도한다.");
+ if(heroReady)doFleeAttempt();
+}
+function cancelFlee(){
+ fleeReserved=false;
+ updateActionButtons();
+ battleLog("🏃 도주 예약을 취소했다.");
+}
+function doFleeAttempt(){
+ if(!enemy||!fleeReserved)return;
+ heroReady=false; heroGauge=0; updateActionButtons(); updateBattleBars();
+ if(Math.random()<0.5){
+  stopBattleTick();
+  fleeReserved=false;
+  battleLog("🏃 도주에 성공했다.");
+  enemy=null;
+  setTimeout(()=>show("dungeon"),700);
+ }else{
+  battleLog("🏃 도주에 실패했다. 게이지가 차면 다시 자동으로 시도한다.");
+  fleeReserved=true;
+  updateActionButtons();
+ }
+}
+function toggleAuto(){
+ auto=!auto;
+ document.getElementById("autoBtn").textContent="🤖 자동: "+(auto?"켜짐":"꺼짐");
+ updateActionButtons();
+}
+function stopAuto(){
+ auto=false;
+ const b=document.getElementById("autoBtn");
+ if(b)b.textContent="🤖 자동: 꺼짐";
+}
+
+// ---------- boot ----------
+loadAudioSettings();
+const bgm=document.getElementById("bgm");
+if(bgm)bgm.addEventListener("error",()=>{bgm.dataset.error="music-load-failed"});
+document.addEventListener("pointerdown",(event)=>{
+ const button=event.target.closest&&event.target.closest("button");
+ if(button&&!button.disabled)playSfx("ui");
+ const audio=document.getElementById("bgm");
+ if(audio&&(audio.dataset.screen==="intro"||audio.dataset.screen==="home"||audio.dataset.screen==="dungeon"||audio.dataset.screen==="battle"))audio.play().catch(()=>{});
+},true);
+refreshIntro();
+syncMusicForScreen("intro");
+</script>
+</body>
+</html>
