@@ -1,0 +1,37 @@
+{
+  "affection": 100,
+  "questCount": 3,
+  "questItems": 3,
+  "recruited": true,
+  "deathState": {
+    "items": {
+      "potion": 0,
+      "mana": 0,
+      "elixir": 0,
+      "scroll": 0
+    },
+    "materials": {
+      "scrap": 0
+    },
+    "gear": {
+      "weapon": [
+        "club"
+      ],
+      "armor": [
+        "work"
+      ],
+      "accessory": [
+        "band"
+      ]
+    },
+    "questItems": 3,
+    "affection": 100,
+    "recruited": true
+  },
+  "partyState": {
+    "heroGauge": 20,
+    "PGold": 20,
+    "enemyHp": 157,
+    "lunaGold": 20
+  }
+}

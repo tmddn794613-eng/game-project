@@ -1,0 +1,20 @@
+{
+  "home": {
+    "screen": "home",
+    "src": "http://127.0.0.1:3000/manus-storage/lexin_music-inspiring-cinematic-ambient-116199_0526eb61.mp3",
+    "musicUrl": true
+  },
+  "world": {
+    "screen": "world",
+    "paused": true
+  },
+  "battle": {
+    "screen": "battle",
+    "paused": true,
+    "currentTime": 0
+  },
+  "homeAgain": {
+    "screen": "home",
+    "src": "http://127.0.0.1:3000/manus-storage/lexin_music-inspiring-cinematic-ambient-116199_0526eb61.mp3"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "bgmLevel1": 0.04,
+  "bgmLevel5": 0.32,
+  "sfxLevel1": 0.2,
+  "sfxLevel5": 0.95,
+  "stored": {
+    "bgm": 5,
+    "sfx": 5
+  },
+  "expected": {
+    "bgmLevel1": 0.04,
+    "bgmLevel5": 0.32,
+    "sfxLevel1": 0.2,
+    "sfxLevel5": 0.95
+  }
+}
